@@ -9,7 +9,7 @@ const RecordsHistory = ({ ashaId, onClose, t }) => {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/get-records/${ashaId}`);
+        const res = await fetch(`/api/get-records/${ashaId}`);
         const data = await res.json();
         // Backend returns records sorted by date (-1) already
         setRecords(data);
