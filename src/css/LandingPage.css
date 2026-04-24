@@ -1,0 +1,125 @@
+.landing-wrapper {
+  background-color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+  color: #1e3a8a; /* Professional dark blue */
+}
+
+.hero-header {
+  background-color: #2d4a3e; /* Light blue sky background */
+  padding: 40px 20px;
+  text-align: center;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+  position: relative;
+}
+
+.logo-bubble {
+  background: white;
+  border-radius: 16px;
+  padding: 12px 24px;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.logo-text {
+  font-size: 28px;
+  font-weight: 800;
+  color: #2d4a3e;
+  margin: 0;
+}
+
+.hero-img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.main-content {
+  padding: 30px 24px;
+  text-align: center;
+}
+
+.headline {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.subheadline {
+  font-size: 14px;
+  color: #2d4a3e;
+  margin-bottom: 32px;
+}
+
+.feature-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.feature-box {
+  background: #f0f9ff;
+  padding: 16px 8px;
+  border-radius: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.feature-box h4 {
+  font-size: 13px;
+  margin: 12px 0 4px 0;
+}
+
+.feature-box p {
+  font-size: 11px;
+  color: #2d4a3e;
+}
+
+.cta-button {
+  background-color: #2d4a3e;
+  color: white;
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+/* LandingPage.css */
+
+/* Simple Reset */
+.min-h-screen {
+  min-height: 100vh;
+  /* Support for mobile browsers with dynamic bars */
+  min-height: 100dvh; 
+}
+
+/* Ensure smooth scrolling on the whole page */
+html, body {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background-color: white;
+}
+
+/* Optional: Add a subtle hover animation for the feature boxes */
+.transition-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-hover:hover {
+  transform: translateY(-4px);
+  background-color: #ffffff;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+}

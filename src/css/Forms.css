@@ -1,0 +1,36 @@
+.form-card-modern { 
+  background: var(--white); 
+  padding: 18px; border-radius: 15px; 
+  display: flex; align-items: center; gap: 15px; 
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.form-icon-box { 
+  width: 40px; height: 40px; 
+  background: #e9f2ee; border-radius: 10px; 
+  display: flex; align-items: center; justify-content: center; 
+}
+
+.active-form-container {
+  padding: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.back-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: none;
+  color: var(--primary); font-weight: 600;
+  cursor: pointer; margin-bottom: 20px;
+}
+
+.modern-input-form { display: flex; flex-direction: column; gap: 20px; }
+
+.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-group label { font-size: 13px; font-weight: 600; color: #666; }
+.input-group input { padding: 14px; border-radius: 12px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
