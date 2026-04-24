@@ -53,10 +53,35 @@ def extract_pdf_text(pdf_path):
         print(f"Error extracting PDF: {e}")
         return ""
 
-import os
 
-CURRENT_DIR = os.path.dirname(__file__)
-pdf_path = os.path.join(CURRENT_DIR, "Handbook_for_ASHA_Facilitators.pdf")
+
+
+
+# --- Update this part specifically ---
+# This finds the folder where index.py lives (the api/ folder)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+pdf_filename = "Handbook_for_ASHA_Facilitators.pdf"
+pdf_path = os.path.join(BASE_DIR, pdf_filename)
+
+# Define a fallback so the variable ALWAYS exists, even if extraction fails
+guidelines = ""
+
+def extract_pdf_text(path):
+    try:
+        if not os.path.exists(path):
+            print(f"CRITICAL ERROR: PDF not found at {path}")
+            return ""
+        doc = fitz.open(path)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return text
+    except Exception as e:
+        print(f"PDF Extraction failed: {e}")
+        return ""
+
+# Initialize the variable
+guidelines = extract_pdf_text(pdf_path)
 
 # --- 7. Pydantic Models ---
 class FormSubmission(BaseModel):
