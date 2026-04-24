@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, ArrowLeft, ClipboardList, Syringe, Mic, MicOff } from 'lucide-react';
 
 const FormsPanel = ({ t, onFormSubmit, language }) => {
