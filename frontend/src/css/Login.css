@@ -99,3 +99,37 @@
   color: #A0A0A0;
   text-align: center;
 }
+
+.back-to-landing {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: white;
+  border: 1px solid #E8E7E0;
+  width: 45px;
+  height: 45px;
+  border-radius: 14px; /* Matching the squircle style */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.back-to-landing:hover {
+  background: #fdfdfd;
+  transform: translateX(-3px);
+  border-color: #2D4A3E;
+}
+
+.back-to-landing:active {
+  transform: scale(0.9);
+}
+
+/* Ensure the login screen is relative so absolute positioning works */
+.login-screen {
+  position: relative;
+  /* ... rest of your existing code ... */
+}

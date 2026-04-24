@@ -97,3 +97,29 @@
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
 }
+/* LandingPage.css */
+
+/* Simple Reset */
+.min-h-screen {
+  min-height: 100vh;
+  /* Support for mobile browsers with dynamic bars */
+  min-height: 100dvh; 
+}
+
+/* Ensure smooth scrolling on the whole page */
+html, body {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background-color: white;
+}
+
+/* Optional: Add a subtle hover animation for the feature boxes */
+.transition-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-hover:hover {
+  transform: translateY(-4px);
+  background-color: #ffffff;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+}

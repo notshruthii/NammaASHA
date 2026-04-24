@@ -1,33 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, FileText, User, Languages, LogOut } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { 
+  MessageCircle, 
+  FileText, 
+  User, 
+  Languages, 
+  LogOut, 
+  MessageSquareText 
+} from 'lucide-react';
 
 // Components
-import FormsPanel from './components/FormsPanel';
 import AICard from './components/AICard';
 import ChatInput from './components/ChatInput';
-import LoginView from './components/LoginView'; // Create this component
-import RecordsHistory from './components/RecordsHistory'; // Create this component
+import FormsPanel from './components/FormsPanel';
+import RecordsHistory from './components/RecordsHistory';
+import LandingPage from './components/LandingPage'; 
+import LoginView from './components/LoginView';
 
-// Constants
+// Constants & Styles
 import { translations } from './constants/translations';
-
-// CSS Imports
-import './index.css';
+import './App.css'; 
 import './css/Header.css';
+import './css/LandingPage.css'; 
 import './css/HeroSection.css';
-import './App.css';
 import './css/Chat.css';
 import './css/Forms.css';
 
-function App() {
-  // 1. AUTH STATE (Check localStorage on load)
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('asha_worker');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-
-  // 2. UI STATE
-  const [language, setLanguage] = useState('kn');
+/**
+ * 1. MAIN DASHBOARD (The "Second Code" Contents)
+ * This contains the Assistant, Forms with Voice, and History
+ */
+function MainDashboard({ user, setUser, language, setLanguage }) {
   const [activeTab, setActiveTab] = useState('assistant');
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -35,49 +38,22 @@ function App() {
   
   const scrollRef = useRef(null);      
   const containerRef = useRef(null);   
-
+  const navigate = useNavigate();
   const t = translations[language];
 
-  // 3. PERSISTENT SCROLL & AUTO-CHAT SCROLL
+  // Auto-scroll chat to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, activeTab]);
 
-  // 4. AUTH LOGIC
-  const handleLogin = async (ashaId, password) => { // Added password parameter
-  try {
-    const res = await fetch("http://127.0.0.1:8000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        asha_id: ashaId, 
-        password: password // Send password to backend
-      }),
-    });
-    
-    const data = await res.json();
-
-    if (res.ok && data.status === "success") {
-      const userData = { id: ashaId, name: data.worker_name, village: data.village };
-      setUser(userData);
-      localStorage.setItem('asha_worker', JSON.stringify(userData));
-    } else {
-      alert(data.detail || "Invalid Credentials");
-    }
-  } catch (e) {
-    alert("Backend connection error");
-  }
-};
-
   const handleLogout = () => {
     localStorage.removeItem('asha_worker');
     setUser(null);
-    setShowHistory(false);
+    navigate('/');
   };
 
-  // 5. NAVIGATION LOGIC
   const handleStartChat = () => {
     if (containerRef.current) {
       containerRef.current.scrollTo({
@@ -88,9 +64,9 @@ function App() {
     setActiveTab('assistant');
   };
 
-  // 6. BACKEND API CALLS
   const sendMessage = async (text) => {
-    setMessages([...messages, { type: 'user', text }]);
+    if (!text.trim()) return;
+    setMessages(prev => [...prev, { type: 'user', text }]);
     setLoading(true);
     try {
       const res = await fetch("http://127.0.0.1:8000/ask", {
@@ -127,24 +103,16 @@ function App() {
         body: JSON.stringify(payload),
       });
       const result = await res.json();
-      if (result.status === "success") {
-        alert(t.successMsg);
-      }
+      if (result.status === "success") alert(t.successMsg);
     } catch (err) {
       alert(t.errorMsg);
     }
   };
 
-  // 7. RENDER LOGIN IF NOT AUTHENTICATED
-  if (!user) {
-    return <LoginView onLogin={handleLogin} t={t} />;
-  }
-
   return (
     <div className="mobile-wrapper">
       <div className="mobile-container">
-        
-        {/* STICKY HEADER (STAYS AT TOP) */}
+        {/* APP HEADER */}
         <header className="sticky-header">
           <div className="user-profile" onClick={() => setShowHistory(true)}>
             <div className="avatar"><User size={20} color="white"/></div>
@@ -164,20 +132,15 @@ function App() {
           </div>
         </header>
 
-        {/* RECORDS HISTORY DRAWER (Visible when profile is clicked) */}
         {showHistory && (
-          <RecordsHistory 
-            ashaId={user.id} 
-            onClose={() => setShowHistory(false)} 
-            t={t} 
-          />
+          <RecordsHistory ashaId={user.id} onClose={() => setShowHistory(false)} t={t} />
         )}
 
         <div className="snap-container" ref={containerRef}>
-          
-          {/* SECTION 1: HERO (Welcome Card) */}
+          {/* WELCOME HERO */}
           <section className="snap-section hero-section">
             <div className="hero-card">
+              <h2 className="text-xl font-black italic mb-2">NammaASHA</h2>
               <h2>{t.heroTitle}</h2>
               <p>{t.heroSub}</p>
               <button className="hero-btn" onClick={handleStartChat}>
@@ -190,20 +153,14 @@ function App() {
             </div>
           </section>
 
-          {/* SECTION 2: MAIN PANEL (Assistant & Forms) */}
+          {/* MAIN TABS AREA */}
           <section className="snap-section main-panel-section">
             <div className="tab-nav-sticky">
               <div className="uber-tabs">
-                <div 
-                  className={`tab-item ${activeTab === 'assistant' ? 'active' : ''}`} 
-                  onClick={() => setActiveTab('assistant')}
-                >
+                <div className={`tab-item ${activeTab === 'assistant' ? 'active' : ''}`} onClick={() => setActiveTab('assistant')}>
                   <MessageCircle size={20} /> <span>{t.tabAssistant}</span>
                 </div>
-                <div 
-                  className={`tab-item ${activeTab === 'forms' ? 'active' : ''}`} 
-                  onClick={() => setActiveTab('forms')}
-                >
+                <div className={`tab-item ${activeTab === 'forms' ? 'active' : ''}`} onClick={() => setActiveTab('forms')}>
                   <FileText size={20} /> <span>{t.tabForms}</span>
                 </div>
               </div>
@@ -212,7 +169,12 @@ function App() {
             <div className="panel-content">
               {activeTab === 'assistant' ? (
                 <div className="messages-area" ref={scrollRef}>
-                  {messages.length === 0 && <div className="empty-chat-msg">{t.placeholder}</div>}
+                  {messages.length === 0 && (
+                    <div className="empty-chat-msg flex flex-col items-center opacity-40">
+                       <MessageSquareText size={48} className="mb-4 text-[#0077ED]" />
+                       <p>{t.placeholder}</p>
+                    </div>
+                  )}
                   {messages.map((msg, idx) => (
                     <div key={idx} className={msg.type === 'user' ? 'msg-user' : 'msg-ai'}>
                       {msg.type === 'user' ? msg.text : <AICard data={msg.data} />}
@@ -221,14 +183,10 @@ function App() {
                   {loading && <div className="msg-ai">{t.thinking}</div>}
                 </div>
               ) : (
-                <FormsPanel 
-                  t={t} 
-                  onFormSubmit={handleFormSubmit} 
-                />
+                <FormsPanel t={t} onFormSubmit={handleFormSubmit} language={language} />
               )}
             </div>
             
-            {/* Input Bar only shows on Assistant Tab */}
             {activeTab === 'assistant' && (
               <ChatInput onSend={sendMessage} loading={loading} />
             )}
@@ -239,4 +197,67 @@ function App() {
   );
 }
 
-export default App;
+/**
+ * 2. ROOT APP (Routing Logic)
+ */
+export default function App() {
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('asha_worker');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [language, setLanguage] = useState('kn');
+  const t = translations[language];
+
+  // Auth Logic for the Login page
+  const handleLogin = async (ashaId, password, navigate) => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ asha_id: ashaId, password: password }),
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.status === "success") {
+        const userData = { id: ashaId, name: data.worker_name, village: data.village };
+        setUser(userData);
+        localStorage.setItem('asha_worker', JSON.stringify(userData));
+        navigate('/app'); // Redirect to dashboard after successful login
+      } else {
+        alert(data.detail || "Invalid Credentials");
+      }
+    } catch (e) {
+      alert("Backend connection error");
+    }
+  };
+
+  return (
+    <Router>
+      <Routes>
+        {/* STEP 1: Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* STEP 2: Login Page */}
+        <Route 
+          path="/login" 
+          element={user ? <Navigate to="/app" /> : <LoginView onLogin={handleLogin} t={t} />} 
+        />
+        
+        {/* STEP 3: Main App Dashboard */}
+        <Route 
+          path="/app" 
+          element={user ? (
+            <MainDashboard 
+              user={user} 
+              setUser={setUser} 
+              language={language} 
+              setLanguage={setLanguage} 
+            />
+          ) : (
+            <Navigate to="/login" />
+          )} 
+        />
+      </Routes>
+    </Router>
+  );
+}
