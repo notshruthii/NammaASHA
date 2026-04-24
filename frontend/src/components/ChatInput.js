@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mic, Send, MicOff, Globe } from 'lucide-react';
-
+import '../css/Chat.css'
 const ChatInput = ({ onSend, loading }) => {
   const [text, setText] = useState("");
   const [isListening, setIsListening] = useState(false);
