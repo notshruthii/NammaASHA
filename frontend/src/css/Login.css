@@ -1,49 +1,101 @@
+/* Login.css */
 .login-screen {
   height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #F3F2EA;
-  padding: 20px;
+  background-color: #F8F7F2; /* Matching your app's cream background */
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.login-card {
-  background: white;
-  width: 100%;
-  max-width: 350px;
-  padding: 40px 30px;
-  border-radius: 30px;
+.login-header {
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  margin-bottom: 40px;
 }
 
-.login-icon {
-  width: 80px;
-  height: 80px;
-  background: #e9f2ee;
-  border-radius: 50%;
+.brand-logo {
+  width: 70px;
+  height: 70px;
+  background: #2D4A3E;
+  border-radius: 22px; /* Smooth squircle */
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 16px;
+  box-shadow: 0 10px 20px rgba(45, 74, 62, 0.2);
+}
+
+.login-header h1 {
+  font-size: 28px;
+  color: #1a1a1a;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.login-header p {
+  color: #727272;
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: transparent;
+}
+
+.input-group {
+  margin-bottom: 16px;
+  position: relative;
 }
 
 .login-card input {
   width: 100%;
-  padding: 15px;
-  margin: 20px 0;
-  border-radius: 12px;
-  border: 1px solid #ddd;
+  padding: 18px 20px;
+  background: white;
+  border: 1.5px solid #E8E7E0;
+  border-radius: 18px; /* High rounding like your dashboard buttons */
   font-size: 16px;
   outline: none;
-  text-align: center;
+  transition: all 0.3s ease;
+  color: #2D4A3E;
+  box-sizing: border-box;
 }
 
-.logout-link {
-  font-size: 11px;
-  color: #ff4b4b;
-  background: none;
+.login-card input:focus {
+  border-color: #2D4A3E;
+  box-shadow: 0 0 0 4px rgba(45, 74, 62, 0.05);
+}
+
+.login-card input::placeholder {
+  color: #A0A0A0;
+}
+
+.hero-btn {
+  width: 100%;
+  padding: 18px;
+  margin-top: 24px;
+  background: #2D4A3E; /* The dark green from your image */
+  color: white;
   border: none;
-  text-decoration: underline;
+  border-radius: 50px; /* Pill shaped like the "ಸಹಾಯ ಕೇಳಿ" button */
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.2s active;
+  box-shadow: 0 8px 16px rgba(45, 74, 62, 0.15);
+}
+
+.hero-btn:active {
+  transform: scale(0.98);
+}
+
+.footer-text {
+  margin-top: 30px;
+  font-size: 13px;
+  color: #A0A0A0;
+  text-align: center;
 }

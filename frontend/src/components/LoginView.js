@@ -1,31 +1,56 @@
 import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
-import '../css/Login.css'
+import { Activity } from 'lucide-react'; // Activity looks more medical/healthcare
+import '../css/Login.css';
+
 const LoginView = ({ onLogin, t }) => {
   const [id, setId] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(id);
+    onLogin(id, password);
   };
 
   return (
     <div className="login-screen">
+      <div className="login-header">
+        <div className="brand-logo">
+          <Activity size={32} color="white" strokeWidth={2.5} />
+        </div>
+        <h1>{t.userType || "ASHA"} Login</h1>
+        <p>Providing care, one visit at a time</p>
+      </div>
+
       <div className="login-card">
-        <div className="login-icon"><Lock size={40} color="#0b664d"/></div>
-        <h2>{t.userType} Login</h2>
-        <p>Please enter your unique ASHA ID to continue</p>
-        
         <form onSubmit={handleSubmit}>
-          <input 
-            type="text" 
-            placeholder="Enter ID (e.g. 123)" 
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            required
-          />
-          <button type="submit" className="hero-btn">Login</button>
+          <div className="input-group">
+            <input 
+              type="text" 
+              placeholder="ASHA ID" 
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              required
+              autoComplete="username"
+            />
+          </div>
+          
+          <div className="input-group">
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          <button type="submit" className="hero-btn">
+            Sign In
+          </button>
         </form>
+        
+        <p className="footer-text">National Health Mission • Karnataka</p>
       </div>
     </div>
   );

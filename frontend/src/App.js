@@ -46,26 +46,30 @@ function App() {
   }, [messages, activeTab]);
 
   // 4. AUTH LOGIC
-  const handleLogin = async (ashaId) => {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ asha_id: ashaId }),
-      });
-      const data = await res.json();
+  const handleLogin = async (ashaId, password) => { // Added password parameter
+  try {
+    const res = await fetch("http://127.0.0.1:8000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        asha_id: ashaId, 
+        password: password // Send password to backend
+      }),
+    });
+    
+    const data = await res.json();
 
-      if (data.status === "success") {
-        const userData = { id: ashaId, name: data.worker_name, village: data.village };
-        setUser(userData);
-        localStorage.setItem('asha_worker', JSON.stringify(userData));
-      } else {
-        alert("Invalid ID. Try 123");
-      }
-    } catch (e) {
-      alert("Backend connection error");
+    if (res.ok && data.status === "success") {
+      const userData = { id: ashaId, name: data.worker_name, village: data.village };
+      setUser(userData);
+      localStorage.setItem('asha_worker', JSON.stringify(userData));
+    } else {
+      alert(data.detail || "Invalid Credentials");
     }
-  };
+  } catch (e) {
+    alert("Backend connection error");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem('asha_worker');
