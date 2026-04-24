@@ -53,7 +53,10 @@ def extract_pdf_text(pdf_path):
         print(f"Error extracting PDF: {e}")
         return ""
 
-guidelines = extract_pdf_text("Handbook_for_ASHA_Facilitators.pdf")
+import os
+
+CURRENT_DIR = os.path.dirname(__file__)
+pdf_path = os.path.join(CURRENT_DIR, "Handbook_for_ASHA_Facilitators.pdf")
 
 # --- 7. Pydantic Models ---
 class FormSubmission(BaseModel):

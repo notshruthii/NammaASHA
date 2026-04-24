@@ -69,7 +69,7 @@ function MainDashboard({ user, setUser, language, setLanguage }) {
     setMessages(prev => [...prev, { type: 'user', text }]);
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/ask", {
+      const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, language }),
@@ -97,7 +97,7 @@ function MainDashboard({ user, setUser, language, setLanguage }) {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/submit-form", {
+      const res = await fetch("/api/submit-form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -211,7 +211,7 @@ export default function App() {
   // Auth Logic for the Login page
   const handleLogin = async (ashaId, password, navigate) => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/login", {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ asha_id: ashaId, password: password }),
