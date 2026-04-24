@@ -1,31 +1,64 @@
+import os
+import json
+import traceback
+from datetime import datetime, timezone
+from typing import List
 
-from fastapi import FastAPI
+import fitz  # pymupdf
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google import genai
+from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
-import os
-import fitz  # pymupdf
 
-def extract_pdf_text(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
-
-guidelines = extract_pdf_text("Handbook_for_ASHA_Facilitators.pdf")
-# Load .env
+# --- 1. Load Environment Variables First ---
 load_dotenv()
 
+# --- 2. Configuration & API Keys ---
+MONGO_URI = os.getenv("MONGO_URI")
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Debug (optional)
-print("API KEY LOADED:", API_KEY is not None)
+# --- 3. Database Setup ---
+# We initialize the client after loading the .env
+client_db = AsyncIOMotorClient(MONGO_URI)
+db = client_db.asha_healthcare  # Database Name
+forms_collection = db.get_collection("patient_forms")
+workers_collection = db.get_collection("workers")
 
-# Init client
-client = genai.Client(api_key=API_KEY)
+# --- 4. AI Setup ---
+ai_client = genai.Client(api_key=API_KEY)
 
+# --- 5. PDF Guidelines Extraction ---
+def extract_pdf_text(pdf_path):
+    try:
+        if not os.path.exists(pdf_path):
+            print(f"Warning: {pdf_path} not found. Guidelines will be empty.")
+            return ""
+        doc = fitz.open(pdf_path)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return text
+    except Exception as e:
+        print(f"Error extracting PDF: {e}")
+        return ""
+
+guidelines = extract_pdf_text("Handbook_for_ASHA_Facilitators.pdf")
+
+# --- 6. Pydantic Models ---
+class FormSubmission(BaseModel):
+    asha_id: str
+    asha_name: str
+    form_type: str
+    patient_name: str
+    formData: dict 
+
+class Question(BaseModel):
+    text: str
+    language: str = "kn" # Default to Kannada
+
+# --- 7. FastAPI App Initialization ---
 app = FastAPI()
 
 app.add_middleware(
@@ -36,84 +69,100 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Question(BaseModel):
-    text: str
-
-import json
-
+# --- 8. AI Assistant Endpoint ---
 @app.post("/ask")
-def ask(question: Question):
+async def ask(question: Question):
     try:
-        print("Incoming:", question.text)
+        print(f"Incoming ({question.language}): {question.text}")
 
         prompt = f"""
-You are an assistant for ASHA health workers in Karnataka, India.
+You are a healthcare assistant for ASHA workers in Karnataka, India.
+Base your answers on the National Health Mission guidelines.
 
-You answer questions related to:
-- Maternal health
-- Newborn and child health
-- Immunization
-- Nutrition
-- Communicable diseases (e.g., fever, diarrhea, TB, malaria, dengue)
-- Basic first aid and community health education
-- National Health Mission (NHM) and HBNC guidelines
+If the question is unrelated to health, respond with an 'Out of scope' topic.
 
-If the question is outside healthcare, respond with:
-{{
-  "topic": "Out of scope",
-  "answer_en": "This question is not related to ASHA health work or community healthcare.",
-  "answer_kn": "ಈ ಪ್ರಶ್ನೆ ಆರೋಗ್ಯ ಕಾರ್ಯಕ್ಕೆ ಸಂಬಂಧಪಟ್ಟಿಲ್ಲ.",
-  "key_actions_en": [],
-  "key_actions_kn": [],
-  "followup_checklist": null
-}}
-
-Respond ONLY with a valid JSON object. No markdown, no extra text.
+Respond ONLY with a valid JSON object. No markdown fences.
 
 Schema:
 {{
-  "topic": "<short topic label in English>",
-  "answer_en": "<clear answer in English, 2-4 sentences>",
-  "answer_kn": "<same answer in simple Kannada>",
-  "key_actions_en": ["<action 1>", "<action 2>", "<action 3>"],
-  "key_actions_kn": ["<action 1 in Kannada>", "<action 2>", "<action 3>"],
-  "followup_checklist": null
+  "topic": "English label",
+  "answer_en": "2-4 sentence answer",
+  "answer_kn": "Same answer in simple Kannada",
+  "key_actions_en": ["action 1", "action 2"],
+  "key_actions_kn": ["ಕ್ರಿಯೆ 1", "ಕ್ರಿಯೆ 2"],
+  "followup_checklist": [
+     {{"en": "check item", "kn": "ಪರಿಶೀಲನಾ ಅಂಶ"}}
+  ]
 }}
 
-The "followup_checklist" field should be null UNLESS the question involves
-assessing a patient, doing a home visit, checking immunization status,
-or any verification task. If needed:
-[
-  {{"en": "<check item>", "kn": "<check item in Kannada>"}}
-]
-Limit to 4–5 items.
-
-Guidelines: {guidelines}
+Guidelines Context: {guidelines[:5000]} 
 Question: {question.text}
 """
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
+        # Using async generate_content if supported, else wrap in run_in_threadpool
+        response = ai_client.models.generate_content(
+            model="gemini-2.0-flash", # Updated to latest model
             contents=prompt
         )
 
-        raw = getattr(response, "text", None)
+        raw = response.text
         if not raw:
-            return {"error": "No response from AI"}
+            raise HTTPException(status_code=500, detail="Empty response from AI")
 
-        # Strip any accidental markdown fences
+        # Clean JSON string
         clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-
-        try:
-            data = json.loads(clean)
-        except json.JSONDecodeError:
-            return {"error": "AI returned malformed JSON", "raw": raw}
-
-        return data
+        return json.loads(clean)
 
     except Exception as e:
-        import traceback
         traceback.print_exc()
-        return {"error": "Backend error", "detail": str(e)}
+        return {"error": "AI processing error", "detail": str(e)}
+
+# --- 9. Form Submission Endpoint ---
+@app.post("/submit-form")
+async def submit_form(submission: FormSubmission):
+    try:
+        doc = submission.model_dump() 
+        doc["created_at"] = datetime.now(timezone.utc)
+        
+        result = await forms_collection.insert_one(doc)
+        
+        return {
+            "status": "success", 
+            "message": "Form stored in Atlas", 
+            "id": str(result.inserted_id)
+        }
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return {"status": "error", "message": str(e)}
+
+# --- 10. Get Records Endpoint ---
+@app.get("/get-records/{asha_id}")
+async def get_records(asha_id: str):
+    try:
+        cursor = forms_collection.find({"asha_id": asha_id}).sort("created_at", -1)
+        records = await cursor.to_list(length=100)
+        for r in records:
+            r["_id"] = str(r["_id"]) 
+        return records
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
+# Add this model
+class LoginRequest(BaseModel):
+    asha_id: str
+
+# Add this endpoint
+@app.post("/login")
+async def login(req: LoginRequest):
+    # Search for the worker in the 'workers' collection
+    worker = await workers_collection.find_one({"asha_id": req.asha_id})
+    
+    if worker:
+        return {
+            "status": "success", 
+            "worker_name": worker["name"], 
+            "village": worker["village"]
+        }
+    else:
+        raise HTTPException(status_code=401, detail="Invalid ASHA ID")
